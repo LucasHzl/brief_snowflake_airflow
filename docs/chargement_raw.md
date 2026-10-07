@@ -185,3 +185,35 @@ Les données étaient donc déjà présentes avant ces deux exécutions.
 
 Les deux exécutions se terminent avec succès. Les dates sont des valeurs
 TIMESTAMP_NTZ retranscrites sans déduction de fuseau horaire.
+
+## Validation complémentaire du 7 octobre 2026
+
+### Montants décimaux
+
+La requête [verify_amounts.sql](../snowflake/verify_amounts.sql) a retourné dix
+lignes de janvier comportant une partie décimale. Parmi les couples
+(fare_amount, total_amount) affichés : (5.1, 12.12), (4.4, 11.75) et (19.1, 27.1).
+Ces observations confirment la présence de décimales en RAW, sans constituer une
+comparaison exhaustive avec les montants du fichier source.
+
+### Téléchargement et premier chargement de février
+
+Le script mensuel a été exécuté avec --month 2025-02. Contrairement à la relance
+de janvier, cette exécution a téléchargé un nouveau fichier et ajouté ses lignes.
+
+| Indicateur | Résultat |
+|---|---|
+| Fichier | yellow_tripdata_2025-02.parquet |
+| Taille téléchargée | 60 343 086 octets |
+| Statut PUT | UPLOADED |
+| Statut COPY | LOADED |
+| Lignes lues | 3 577 543 |
+| Lignes chargées | 3 577 543 |
+| Erreurs de chargement | 0 |
+| Lignes vérifiées en RAW pour ce fichier | 3 577 543 |
+| Première et dernière date de chargement affichées | 2026-10-07 07:48:34.432013 |
+| Fin du script | Succès |
+
+Le téléchargement réel, le transfert et le chargement d'un mois nouveau sont
+ainsi validés. Le test de relance sans ajout de lignes reste celui effectué sur
+janvier ; aucune relance de février n'est attestée par ces résultats.
