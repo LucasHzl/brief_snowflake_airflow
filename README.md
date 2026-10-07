@@ -122,3 +122,6 @@ L'adresse de l'interface est affichée à la fin de la commande.
 
 La [procédure de connexion Snowflake](docs/connexion_snowflake.md) décrit les scripts
 d’infrastructure, la configuration locale des clés et le test Python du compte de service.
+
+La [procédure de chargement RAW](docs/chargement_raw.md) détaille le transfert de janvier,
+son chargement et la vérification de la relance sans ajout de lignes.
