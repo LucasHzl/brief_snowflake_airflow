@@ -90,3 +90,55 @@ pas ces métadonnées ; TRUNCATE les réinitialise et vide la table entière.
 
 Références : [PUT](https://docs.snowflake.com/en/sql-reference/sql/put),
 [COPY INTO](https://docs.snowflake.com/en/sql-reference/sql/copy-into-table).
+
+## Commande mensuelle Python
+
+[load_month.py](../ingestion/load_month.py) enchaîne le téléchargement, PUT,
+COPY INTO et le comptage des lignes pour le fichier traité. Les objets RAW doivent
+avoir été créés avant son exécution. Depuis la racine du dépôt :
+
+```bash
+source .venv/bin/activate
+uv pip install -r ingestion/requirements.txt
+read -r 'SNOWFLAKE_ACCOUNT?Identifiant de compte Snowflake : '
+python ingestion/load_month.py --account "$SNOWFLAKE_ACCOUNT" --month 2025-01
+```
+
+Saisir l'identifiant réel du compte, obtenu via la requête de la procédure de
+connexion. Le paramètre --month accepte un mois valide au format AAAA-MM.
+--input-dir change le dossier de téléchargement ; --private-key change le chemin
+de la clé privée. Par défaut, le script utilise data/input à la racine du dépôt
+et ~/.ssh/snowflake/rsa_key.p8.
+
+Un fichier local existant est réutilisé après vérification des marqueurs Parquet.
+Cette vérification n'est pas une validation intégrale du contenu : COPY INTO
+contrôle ensuite sa lecture et ses conversions. Un nouveau téléchargement est
+écrit par morceaux dans un fichier .part, puis renommé une fois terminé.
+En cas d'erreur ou d'interruption normale, le fichier temporaire est supprimé.
+Après un arrêt brutal, un éventuel .part sera réécrit lors du prochain essai.
+Le script est prévu pour une exécution à la fois par fichier local.
+
+Le transfert réutilise la fonction upload_to_stage du script upload_file.py.
+Le chargement conserve FORCE = FALSE et les options du SQL validé. Une réponse
+LOAD_SKIPPED accompagnée de « File was loaded before. » est acceptée même lorsque
+Snowflake renvoie errors_seen = 1. Le script vérifie ensuite qu'il existe des lignes
+pour ce fichier et que _loaded_at est renseigné. Les autres erreurs restent bloquantes.
+
+### Validation du script mensuel
+
+Le 7 octobre 2026, exécution réelle sur janvier déjà chargé : réutilisation du
+fichier local, transfert ignoré, chargement ignoré et 3 475 226 lignes confirmées
+en RAW, avec fin d'exécution réussie. Ce test valide la relance sur janvier ;
+il ne constitue pas un test réel du téléchargement d'un nouveau mois.
+
+Les vérifications locales ont couvert le format du mois, la réutilisation du
+fichier et le nettoyage après une interruption simulée du téléchargement.
+Les tests de régression du traitement COPY s'exécutent sans accès à Snowflake :
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Cinq cas sont couverts : fichier déjà chargé, autre erreur de fichier ignoré,
+chargement signalant des erreurs, absence de lignes RAW après une réponse ignorée,
+et chargement réussi. Ces tests ne remplacent pas la validation réelle dans Snowflake.

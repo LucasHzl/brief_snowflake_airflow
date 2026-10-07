@@ -6,6 +6,26 @@ from pathlib import Path
 import snowflake.connector
 
 
+def upload_to_stage(cursor, source):
+    """Upload one file using an existing cursor; no table rows are loaded."""
+    cursor.execute(
+        "PUT %s @NYC_TAXI.RAW.TLC_STAGE "
+        "AUTO_COMPRESS = FALSE OVERWRITE = FALSE",
+        ("file://" + source.as_posix(),),
+    )
+    results = cursor.fetchall()
+    if not results:
+        raise RuntimeError("Upload returned no file status")
+    for result in results:
+        result = {name.lower(): value for name, value in result.items()}
+        status = result.get("status")
+        print(f"{result.get('source')} -> {result.get('target')}: {status}", flush=True)
+        if result.get("message"):
+            print(result["message"], flush=True)
+        if status not in {"UPLOADED", "SKIPPED"}:
+            raise RuntimeError("File upload did not succeed")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--account", required=True, help="ORGANIZATION-ACCOUNT")
@@ -38,26 +58,8 @@ def main():
     ) as connection:
         with connection.cursor(snowflake.connector.DictCursor) as cursor:
             cursor.execute("USE SECONDARY ROLES NONE")
-            # Keep the original filename and place it at the root of the stage.
-            # Binding quotes the local URI without inserting it into SQL manually.
-            cursor.execute(
-                "PUT %s @NYC_TAXI.RAW.TLC_STAGE "
-                "AUTO_COMPRESS = FALSE OVERWRITE = FALSE",
-                ("file://" + source.as_posix(),),
-            )
-            results = cursor.fetchall()
+            upload_to_stage(cursor, source)
 
-    if not results:
-        raise SystemExit("Upload returned no file status")
-    for result in results:
-        # Normalize metadata column names returned by the connector.
-        result = {name.lower(): value for name, value in result.items()}
-        status = result.get("status")
-        print(f"{result.get('source')} -> {result.get('target')}: {status}")
-        if result.get("message"):
-            print(result["message"])
-        if status not in {"UPLOADED", "SKIPPED"}:
-            raise SystemExit("File upload did not succeed")
     print("Stage transfer finished. No table rows were loaded.")
 
 

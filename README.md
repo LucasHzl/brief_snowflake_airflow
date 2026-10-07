@@ -124,4 +124,4 @@ La [procédure de connexion Snowflake](docs/connexion_snowflake.md) décrit les 
 d’infrastructure, la configuration locale des clés et le test Python du compte de service.
 
 La [procédure de chargement RAW](docs/chargement_raw.md) détaille le transfert de janvier,
-son chargement et la vérification de la relance sans ajout de lignes.
+son chargement, la commande Python mensuelle et la vérification de la relance sans ajout de lignes.
