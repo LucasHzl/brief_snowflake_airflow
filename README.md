@@ -117,3 +117,8 @@ L'adresse de l'interface est affichée à la fin de la commande.
 | `MARTS.FCT_TRIPS` | 10 382 378 |
 | `MARTS.MART_ZONE_HOURLY_DEMAND` | 11 524 |
 | `MARTS.MART_DATA_QUALITY` | 18 |
+
+## Infrastructure et connexion du projet
+
+La [procédure de connexion Snowflake](docs/connexion_snowflake.md) décrit les scripts
+d’infrastructure, la configuration locale des clés et le test Python du compte de service.
