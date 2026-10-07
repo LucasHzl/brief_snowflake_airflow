@@ -142,3 +142,46 @@ python -m unittest discover -s tests -v
 Cinq cas sont couverts : fichier déjà chargé, autre erreur de fichier ignoré,
 chargement signalant des erreurs, absence de lignes RAW après une réponse ignorée,
 et chargement réussi. Ces tests ne remplacent pas la validation réelle dans Snowflake.
+
+## Référentiel des zones
+
+[load_zones.py](../ingestion/load_zones.py) charge le référentiel TLC indépendamment
+du pipeline mensuel et hors Airflow. Il télécharge le
+[CSV public des zones](https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv)
+s'il est absent de data/input, puis vérifie son en-tête, ses quatre champs par ligne,
+ses 265 lignes et l'unicité de ses identifiants avant le transfert.
+
+Depuis la racine du dépôt, dans l'environnement Python activé :
+
+```bash
+read -r 'SNOWFLAKE_ACCOUNT?Identifiant de compte Snowflake : '
+python ingestion/load_zones.py --account "$SNOWFLAKE_ACCOUNT"
+```
+
+Le format CSV_FORMAT ignore l'en-tête et gère les guillemets. Le chargement associe
+les quatre champs par position ($1 à $4), puis ajoute METADATA$FILENAME et
+METADATA$START_SCAN_TIME. Les valeurs textuelles de la source telles que N/A ne
+sont pas remplacées par une règle métier. FORCE = FALSE permet d'ignorer un fichier
+reconnu comme déjà chargé, avec les mêmes limites que pour les trajets.
+
+Relancer la même commande pour vérifier l'absence de doublons. Le script contrôle
+la table entière : 265 lignes, 265 identifiants distincts et une traçabilité complète.
+Le contrôle peut également être exécuté dans Snowsight avec
+[verify_zones.sql](../snowflake/verify_zones.sql).
+
+### Validation des zones du 7 octobre 2026
+
+Les deux relances rapportées ont réutilisé le CSV local et obtenu SKIPPED pour PUT,
+puis LOAD_SKIPPED avec « File was loaded before. » pour COPY INTO.
+Les données étaient donc déjà présentes avant ces deux exécutions.
+
+| Indicateur | Résultat après relance |
+|---|---:|
+| Lignes en RAW | 265 |
+| Identifiants distincts | 265 |
+| Métadonnées manquantes ou nom de fichier incorrect | 0 |
+| Date minimale de chargement | 2026-10-07 07:24:16.539779 |
+| Date maximale de chargement | 2026-10-07 07:24:16.539779 |
+
+Les deux exécutions se terminent avec succès. Les dates sont des valeurs
+TIMESTAMP_NTZ retranscrites sans déduction de fuseau horaire.
