@@ -216,4 +216,5 @@ de janvier, cette exécution a téléchargé un nouveau fichier et ajouté ses l
 
 Le téléchargement réel, le transfert et le chargement d'un mois nouveau sont
 ainsi validés. Le test de relance sans ajout de lignes reste celui effectué sur
-janvier ; aucune relance de février n'est attestée par ces résultats.
+janvier ; le rejeu de février via Airflow a ensuite été validé le 8 octobre, comme indiqué
+dans le [compte rendu Airflow](../airflow/README.md).

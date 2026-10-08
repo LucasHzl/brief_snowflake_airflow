@@ -11,9 +11,7 @@ CREATE USER IF NOT EXISTS AIRFLOW_SVC
 -- Le rôle par défaut ne constitue pas une attribution de droits.
 GRANT ROLE TRANSFORMER TO USER AIRFLOW_SVC;
 
--- Après génération locale des clés, exécuter séparément cette instruction
--- en remplaçant le contenu par la clé PUBLIQUE, sans en-têtes ni sauts de ligne.
--- ALTER USER AIRFLOW_SVC SET RSA_PUBLIC_KEY = 'CLE_PUBLIQUE';
+-- Enregistrer ensuite la clé publique selon docs/connexion_snowflake.md.
 -- La clé privée ne doit jamais être insérée dans ce script.
 
 SHOW GRANTS TO USER AIRFLOW_SVC;

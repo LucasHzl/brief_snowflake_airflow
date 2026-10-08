@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def source_url(month):
-    # Bound the training pipeline, including accidental manual runs.
+    # Restrict ingestion to the three months in the project scope.
     if month not in {"2025-01", "2025-02", "2025-03"}:
         raise ValueError(f"Month outside the project scope: {month}")
     return f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{month}.parquet"

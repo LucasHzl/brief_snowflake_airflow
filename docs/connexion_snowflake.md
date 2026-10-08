@@ -55,13 +55,22 @@ Afficher uniquement la clé publique, sans délimiteurs et sur une ligne :
 awk '!/-----/ {printf "%s", $0} END {print ""}' ~/.ssh/snowflake/rsa_key.pub
 ```
 
-Dans Snowsight, remplacer le texte entre apostrophes par cette valeur :
+Produire l'instruction d'enregistrement depuis le fichier de clé publique :
 
-```sql
-USE ROLE SECURITYADMIN;
-ALTER USER AIRFLOW_SVC SET RSA_PUBLIC_KEY = 'COLLER_LA_CLE_PUBLIQUE';
-DESCRIBE USER AIRFLOW_SVC;
+```bash
+python - <<'PYCODE'
+from pathlib import Path
+public_key = "".join(
+    line.strip() for line in Path.home().joinpath(".ssh/snowflake/rsa_key.pub").read_text().splitlines()
+    if not line.startswith("-----")
+)
+print("USE ROLE SECURITYADMIN;")
+print("ALTER USER AIRFLOW_SVC SET RSA_PUBLIC_KEY = '" + public_key + "';")
+print("DESCRIBE USER AIRFLOW_SVC;")
+PYCODE
 ```
+
+Exécuter les trois instructions produites dans Snowsight.
 
 Vérifier que RSA_PUBLIC_KEY_FP contient une empreinte. Cette vérification constate
 l'enregistrement d'une clé publique ; le test Python valide ensuite la connexion.
@@ -88,10 +97,11 @@ source .venv/bin/activate
 uv pip install -r ingestion/requirements.txt
 ```
 
-Remplacer ORGANISATION-COMPTE par l'identifiant obtenu, sans URL ni suffixe de domaine :
+Saisir l'identifiant obtenu, sans URL ni suffixe de domaine :
 
 ```bash
-python ingestion/check_connection.py --account ORGANISATION-COMPTE
+read -r 'SNOWFLAKE_ACCOUNT?Identifiant de compte Snowflake : '
+python ingestion/check_connection.py --account "$SNOWFLAKE_ACCOUNT"
 ```
 
 L'option --private-key permet d'utiliser un autre chemin de clé privée.

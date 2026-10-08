@@ -14,7 +14,7 @@ Chaque journée suit le même plan : le guide à suivre d'abord, les étapes, le
 ### Étapes
 
 1. **Lire le schéma du pipeline** (`docs/architecture.png`) : repérer les sources, les quatre couches et ce que fait chaque outil.
-2. **Explorer le fichier de janvier** et remplir la fiche source des trajets, à partir du modèle `docs/FICHE_SOURCE_MODELE.md`.
+2. **Explorer le fichier de janvier** et remplir la fiche source des trajets, dans `docs/fiche_trajets.md`.
 3. **Suivre le guide** sur son exemple (`SALES_DB`), dans votre compte Snowflake.
 4. **Écrire le script SQL qui crée l'entrepôt**, dans `snowflake/` : warehouse, base, schémas, rôle des outils, utilisateur de service.
 5. **Générer la paire de clés** et vérifier que l'utilisateur de service se connecte depuis votre poste.
@@ -141,7 +141,7 @@ Trois exécutions réussies et 10 382 378 trajets valides dans `FCT_TRIPS`.
 
 ### Étapes
 
-1. **Écrire la requête SQL qui répond à la direction**, et remplir `docs/REPONSE.md` à partir du modèle `docs/REPONSE_MODELE.md`.
+1. **Écrire la requête SQL qui répond à la direction**, et documenter dans `docs/REPONSE.md` la requête, ses dix premières lignes, trois phrases d’interprétation et les limites.
 2. **Compter vous-mêmes les trajets anormaux** d'un mois et comparer avec la table `MART_DATA_QUALITY`.
 3. **Mesurer les crédits consommés** (requête d'exemple dans les ressources, à lancer avec le rôle ACCOUNTADMIN).
 4. **Lister les droits du rôle des outils** et prouver qu'il ne peut pas sortir de son périmètre.

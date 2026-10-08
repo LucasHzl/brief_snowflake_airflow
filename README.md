@@ -1,130 +1,163 @@
-# Kit de démarrage — Pipeline médaillon NYC Yellow Taxi (Snowflake et Airflow)
+# Pipeline médaillon NYC Yellow Taxi — Snowflake et Airflow
 
-Point de départ du brief. Ce kit contient ce qui est fourni ; tout le reste est à construire.
+Pipeline de données pour analyser la demande et les revenus des taxis jaunes de
+New York, sur janvier, février et mars 2025. Les fichiers publics de la TLC sont
+chargés dans Snowflake par Python et orchestrés par Airflow 3.
 
-## Dans quel ordre lire
+La question métier est : où et quand la demande est-elle la plus forte, et combien
+rapporte un trajet selon la zone, l'heure et le mode de paiement ? Les données
+couvrent les taxis jaunes publiés par la TLC, pas uniquement une flotte privée.
 
-1. **Le brief** : la situation, ce qui est attendu, comment vous serez évalués.
-2. **Ce README** : ce que contient le kit.
-3. **`ETAPES.md`**, chaque matin : le détail de la journée, les pièges, le résultat à obtenir.
-4. **`CONTRAT_RAW.md`**, au jour 2 : les noms que votre entrepôt doit respecter.
+## Architecture
 
-Avant le premier jour, lancez `bash verifier_poste.sh` : tout doit afficher `OK`.
+![Architecture du pipeline](docs/architecture.png)
 
-## Ce que vous allez construire
+| Élément | Rôle |
+|---|---|
+| Python / Requests | Télécharger les fichiers Parquet mensuels et le référentiel CSV des zones |
+| Stage Snowflake | Recevoir les fichiers avant leur copie dans les tables |
+| RAW | Conserver les valeurs sources, le nom du fichier et la date de chargement |
+| STAGING | Renommer et typer les colonnes dans des vues |
+| INTERMEDIATE | Identifier les trajets rejetés et enrichir les trajets valides |
+| MARTS | Organiser faits, dimensions et agrégats pour l'analyse |
+| Airflow | Planifier les périodes et ordonner les tâches exécutées dans Snowflake |
 
-![Schéma du pipeline](docs/architecture.png)
+Le DAG actuel automatise le chargement RAW. Les transformations des autres couches
+sont présentes sous forme de fichiers SQL fournis dans le kit du projet.
 
-## Contenu du kit
+## Prérequis
 
+- Git, Docker démarré, Astro CLI, OpenSSL et uv.
+- Python 3.12 pour les scripts d'ingestion locaux ; Airflow utilise le Python de son image Docker.
+- Un compte Snowflake avec accès aux rôles d'administration SYSADMIN et SECURITYADMIN.
+- Un terminal zsh sur macOS pour les commandes de saisie documentées.
+
+## Installation et lancement
+
+```bash
+git clone git@github.com:LucasHzl/brief_snowflake_airflow.git
+cd brief_snowflake_airflow
+bash verifier_poste.sh
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install -r ingestion/requirements.txt
 ```
-.
-├── README.md                      ce fichier
-├── ETAPES.md                      le détail de chaque journée
-├── CONTRAT_RAW.md                 noms et colonnes que votre entrepôt doit contenir
-├── verifier_poste.sh              vérifie Python, Git, Docker, Astro CLI, OpenSSL
-├── .gitignore                     exclut les clés, le .env et les fichiers téléchargés
-├── snowflake/                     À ÉCRIRE : scripts d'infrastructure et de couche RAW
-├── ingestion/                     À ÉCRIRE : script Python de chargement d'un mois
-├── docs/
-│   ├── architecture.png           le schéma du pipeline
-│   ├── parcours.png               les cinq journées en un coup d'œil
-│   ├── FICHE_SOURCE_MODELE.md     modèle de fiche source (jour 1)
-│   └── REPONSE_MODELE.md          modèle de réponse à la direction (jour 5)
-└── airflow/
-    ├── requirements.txt           dépendances Python du projet Airflow
-    ├── .env.example               format de la connexion Snowflake
-    ├── dags/                      À ÉCRIRE : votre DAG
-    └── include/sql/               FOURNI : les fichiers SQL, à ne pas modifier
-        ├── 00_tables.sql          crée les trois tables alimentées mois par mois
-        ├── staging/               2 vues de renommage + les tables de codes
-        ├── intermediate/          trajets étiquetés, puis trajets valides enrichis
-        ├── marts/                 5 dimensions, la table de faits, 3 tables d'analyse
-        └── controles/             1 contrôle fourni comme modèle, les autres À ÉCRIRE
+
+1. Suivre la [configuration Snowflake](docs/connexion_snowflake.md) : exécuter les
+   scripts 01 à 03 et verify_context dans l'ordre indiqué, enregistrer la clé
+   publique et tester la connexion du compte de service.
+2. Exécuter `snowflake/04_raw.sql` dans Snowsight avec TRANSFORMER. Ce script crée
+   les formats, le stage et les deux tables du [contrat RAW](CONTRAT_RAW.md).
+3. Charger le référentiel des zones et un mois depuis le terminal :
+
+```bash
+read -r 'SNOWFLAKE_ACCOUNT?Identifiant de compte Snowflake : '
+python ingestion/load_zones.py --account "$SNOWFLAKE_ACCOUNT"
+python ingestion/load_month.py --account "$SNOWFLAKE_ACCOUNT" --month 2025-01
 ```
 
-Les fichiers `.gitkeep` ne servent qu'à conserver les dossiers vides dans Git : vous pouvez les supprimer dès que vous y ajoutez un fichier.
-
-## Selon votre système
-
-| Système | Terminal à utiliser | Installation d'Astro CLI | À savoir |
-|---|---|---|---|
-| macOS | Terminal | `brew install astro` | Docker Desktop ou OrbStack |
-| Linux | terminal habituel | `curl -sSL install.astronomer.io \| sudo bash -s` | Docker Engine suffit |
-| Windows | **WSL avec Ubuntu**, pas PowerShell | la commande Linux, dans Ubuntu | activer l'intégration WSL dans Docker Desktop ; placer le projet dans le dossier personnel d'Ubuntu (`~`), pas sous `/mnt/c` : les droits du fichier de clé n'y fonctionnent pas |
-
-Les commandes du brief et des guides (`openssl`, `awk`, `bash`, `python3`) sont celles d'un terminal macOS ou Linux. Sous Windows, elles s'exécutent telles quelles dans Ubuntu (WSL). Les consignes Windows n'ont pas été testées sur un poste réel.
-
-## Lire les fichiers SQL fournis
-
-Chaque fichier crée une vue ou une table, ou alimente une table pour le mois traité.
-
-- **Les noms sont complets** (`NYC_TAXI.MARTS.FCT_TRIPS`) : la base, les schémas et les tables portent des noms imposés. Le nom du warehouse, du rôle et de l'utilisateur de service est libre.
-- **Pour trouver l'ordre d'exécution** : chaque fichier lit des tables (`FROM`, `JOIN`) et en crée une. Un fichier s'exécute après ceux qui créent les tables qu'il lit. `00_tables.sql` passe avant tout le reste.
-- **Ce qui est entre doubles accolades** est remplacé par Airflow avant l'exécution :
-
-| Dans le fichier | Remplacé par | Exemple pour janvier 2025 |
-|---|---|---|
-| `{{ ds }}` | le premier jour du mois traité | `2025-01-01` |
-| `{{ logical_date.strftime("%Y-%m") }}` | le mois traité | `2025-01` |
-| `{{ params.xxx }}` | un paramètre à déclarer dans votre DAG | voir ci-dessous |
-
-Exécuté tel quel dans Snowsight, un fichier qui contient des accolades échoue : remplacez-les d'abord à la main pour le tester.
-
-Les quatre paramètres attendus par les fichiers fournis :
-
-| Paramètre | Valeur | Utilisé par |
-|---|---|---|
-| `max_trip_distance_miles` | `100` | `intermediate/int_trips__flagged.sql` |
-| `max_trip_duration_min` | `180` | `intermediate/int_trips__flagged.sql` |
-| `start_month` | `"2025-01-01"` | `marts/dim_date.sql` |
-| `end_month` | `"2025-04-01"` | `marts/dim_date.sql` |
-
-## Le contrôle fourni
-
-`controles/raw_mois_charge.sql` vérifie que le mois traité est bien présent dans RAW. Une requête de contrôle renvoie une seule ligne : si une de ses valeurs est fausse, la tâche échoue et la suite ne s'exécute pas. Écrivez les vôtres sur ce modèle.
-
-## Mettre en place le projet Airflow (jour 3)
+4. Suivre la [configuration Airflow](airflow/README.md) pour créer localement
+   `airflow/.env` à partir du fichier d'exemple. Le compte Snowflake et la clé privée
+   sont propres à l'installation ; ils ne sont pas publiés dans le dépôt.
+5. Démarrer le projet déjà initialisé :
 
 ```bash
 cd airflow
-astro dev init                    # le dossier n'est pas vide : répondre y
-```
-
-`astro dev init` génère le `Dockerfile` et les fichiers du projet, sans toucher à `requirements.txt` ni à `include/`. Ensuite :
-
-1. Supprimer `dags/exampledag.py`.
-2. Créer le fichier `airflow/.env` à partir de `airflow/.env.example`. La clé privée y tient sur une seule ligne : voir la section 3 du guide Airflow.
-3. Démarrer :
-
-```bash
 astro dev start
 ```
 
-L'adresse de l'interface est affichée à la fin de la commande.
+6. Exécuter le DAG `check_snowflake_connection`, puis activer `nyc_taxi_monthly`
+   avec son interrupteur. Le scheduler rattrape janvier, février et mars 2025.
+   Le mois vient de la date logique, jamais de la date du jour.
 
-- L'identifiant de connexion à utiliser dans votre code est `snowflake_nyc_taxi`.
-- Un DAG est en pause à sa création : activez-le avec son interrupteur. N'utilisez pas le bouton Trigger pour le DAG de chargement : il lance une exécution datée d'aujourd'hui.
-- Quand vous ajoutez des tâches à un DAG dont les exécutions sont déjà terminées, elles ne tournent pas toutes seules : ouvrez chaque exécution et relancez-la avec Clear.
+Les [procédures de chargement](docs/chargement_raw.md) détaillent le chargement
+manuel, les options des scripts, les vérifications et les limites du rejeu.
 
-## Résultats attendus
+## Choix techniques
 
-| Table | Lignes après les trois mois |
+- Un warehouse XS avec suspension automatique après 60 secondes limite le calcul inactif.
+- Le rôle TRANSFORMER possède les droits de création et d'utilisation nécessaires
+  dans NYC_TAXI. Les outils utilisent AIRFLOW_SVC avec une paire de clés.
+- RAW accepte les valeurs manquantes et utilise FLOAT pour les nombres de trajets :
+  les changements de types numériques entre mois sont acceptés sans arrondir les
+  montants à l'entier. FLOAT est approché ; les transformations appliquent le typage métier.
+- PUT dépose les fichiers à la racine du stage. COPY INTO renseigne `_source_file`
+  et `_loaded_at`, conserve `FORCE = FALSE` et interrompt le chargement en cas d'erreur.
+- `max_active_runs=1` traite un mois à la fois. Le téléchargement et PUT partagent
+  une tâche afin de travailler sur le même fichier temporaire.
+- La reconnaissance des fichiers déjà chargés empêche leur recopie lors des
+  relances validées. Elle ne déduplique pas les trajets présents dans les sources
+  et dépend des métadonnées de chargement Snowflake, conservées 64 jours.
+
+## Résultats vérifiés
+
+Chargements et comptages validés les 7 et 8 octobre 2026 :
+
+| Données RAW | Lignes |
+|---|---:|
+| Janvier 2025 | 3 475 226 |
+| Février 2025 | 3 577 543 |
+| Mars 2025 | 4 145 257 |
+| **Total trajets** | **11 198 026** |
+| Référentiel des zones | 265 identifiants distincts |
+
+Les trois exécutions Airflow ont réussi. Janvier et février, déjà présents avant
+leur exécution dans Airflow, ont conservé leurs volumes. Ces résultats valident
+l'ingestion RAW ; ils ne constituent pas une validation des transformations.
+
+```sql
+SELECT _source_file, COUNT(*) AS trip_count
+FROM NYC_TAXI.RAW.YELLOW_TRIPDATA
+GROUP BY _source_file
+ORDER BY _source_file;
+```
+
+## Tests
+
+Depuis la racine, dans l'environnement Python activé :
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Depuis `airflow/`, avec Docker disponible :
+
+```bash
+astro dev pytest
+```
+
+Les tests couvrent le traitement des réponses COPY, la découverte des DAGs,
+les trois périodes mensuelles et le rendu des noms de fichiers. Ils complètent
+les validations réelles dans Snowflake et Airflow.
+
+## Organisation du dépôt
+
+| Dossier ou document | Contenu |
 |---|---|
-| `RAW.YELLOW_TRIPDATA` | 11 198 026 (3 475 226 en janvier) |
-| `RAW.TAXI_ZONE_LOOKUP` | 265 |
-| `INTERMEDIATE.INT_TRIPS__FLAGGED` | 11 198 026 |
-| `MARTS.FCT_TRIPS` | 10 382 378 |
-| `MARTS.MART_ZONE_HOURLY_DEMAND` | 11 524 |
-| `MARTS.MART_DATA_QUALITY` | 18 |
+| `snowflake/` | Infrastructure, droits, RAW et requêtes de vérification |
+| `ingestion/` | Connexion, transfert et chargements paramétrés |
+| `airflow/` | Projet Astro, DAGs, dépendances et tests |
+| `airflow/include/sql/` | Transformations fournies et requête de chargement RAW |
+| `docs/` | Fiche source, exploration et procédures techniques |
+| `ETAPES.md` | Parcours et exigences par journée fournis avec le projet |
+| `CONTRAT_RAW.md` | Noms et colonnes imposés aux tables sources |
 
-## Infrastructure et connexion du projet
+La [fiche des trajets](docs/fiche_trajets.md) décrit les volumes, les colonnes,
+les codes et les anomalies mesurées. Les SQL de transformation fournis sont
+conservés sans modification.
 
-La [procédure de connexion Snowflake](docs/connexion_snowflake.md) décrit les scripts
-d’infrastructure, la configuration locale des clés et le test Python du compte de service.
+## Paramètres des transformations fournies
 
-La [procédure de chargement RAW](docs/chargement_raw.md) détaille le transfert de janvier,
-son chargement, la commande Python mensuelle et la vérification de la relance sans ajout de lignes.
+Les fichiers SQL utilisent des expressions Jinja rendues par Airflow.
+`ds` désigne la date logique au format AAAA-MM-JJ. Les paramètres attendus sont :
 
-La [configuration Airflow locale](airflow/README.md) décrit le démarrage avec Astro
-et le DAG de vérification de la connexion Snowflake.
+| Paramètre | Valeur |
+|---|---|
+| `max_trip_distance_miles` | 100 |
+| `max_trip_duration_min` | 180 |
+| `start_month` | 2025-01-01 |
+| `end_month` | 2025-04-01 |
+
+## Auteur
+
+[LucasHzl](https://github.com/LucasHzl).
