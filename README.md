@@ -125,3 +125,6 @@ d’infrastructure, la configuration locale des clés et le test Python du compt
 
 La [procédure de chargement RAW](docs/chargement_raw.md) détaille le transfert de janvier,
 son chargement, la commande Python mensuelle et la vérification de la relance sans ajout de lignes.
+
+La [configuration Airflow locale](airflow/README.md) décrit le démarrage avec Astro
+et le DAG de vérification de la connexion Snowflake.

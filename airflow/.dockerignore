@@ -1,0 +1,14 @@
+astro
+.git
+.env
+airflow_settings.yaml
+logs/
+.venv
+airflow.db
+airflow.cfg
+
+# Private key files must never enter the image.
+**/*.p8
+**/*.pem
+**/rsa_key*
+**/.env
