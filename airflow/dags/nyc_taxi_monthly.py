@@ -1,15 +1,15 @@
-"""Load January through March 2025 into RAW, one scheduled run per month."""
+"""Load, transform and check January through March 2025, one run per month."""
 
 from datetime import timedelta
 import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from airflow.sdk import DAG
+from airflow.sdk import DAG, Param, TaskGroup
 from airflow.timetables.interval import CronDataIntervalTimetable
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.standard.sensors.python import PythonSensor
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.common.sql.operators.sql import SQLCheckOperator, SQLExecuteQueryOperator
 from pendulum import datetime
 
 CONNECTION_ID = "snowflake_nyc_taxi"
@@ -88,7 +88,7 @@ def download_and_stage(month):
 
 with DAG(
     dag_id="nyc_taxi_monthly",
-    description="Load the three monthly TLC files into Snowflake RAW",
+    description="Load TLC files and build checked medallion layers in Snowflake",
     start_date=datetime(2025, 1, 1, tz="UTC"),
     # Latest logical date: March 1, whose interval ends on April 1.
     end_date=datetime(2025, 3, 1, tz="UTC"),
@@ -99,7 +99,14 @@ with DAG(
     default_args={"owner": "nyc_taxi", "retries": 2,
                   "retry_delay": timedelta(seconds=30)},
     template_searchpath=[str(Path(__file__).resolve().parents[1] / "include" / "sql")],
-    tags=["nyc_taxi", "monthly", "raw"],
+    params={
+        "max_trip_distance_miles": Param(100, type="number", exclusiveMinimum=0),
+        "max_trip_duration_min": Param(180, type="number", exclusiveMinimum=0),
+        "start_month": Param("2025-01-01", type="string", format="date"),
+        "end_month": Param("2025-04-01", type="string", format="date"),
+        "max_rejection_rate_pct": Param(10, type="number", minimum=0, maximum=100),
+    },
+    tags=["nyc_taxi", "monthly", "medallion"],
 ) as dag:
     wait_for_file = PythonSensor(
         task_id="wait_for_file",
@@ -127,3 +134,52 @@ with DAG(
     )
 
     wait_for_file >> stage_file >> copy_into_raw
+
+
+    def sql_task(task_id, sql):
+        return SQLExecuteQueryOperator(
+            task_id=task_id,
+            conn_id=CONNECTION_ID,
+            sql=sql,
+            split_statements=True,
+            # Keep each DELETE/INSERT pair in one transaction.
+            autocommit=False,
+            do_xcom_push=False,
+            execution_timeout=timedelta(minutes=15),
+        )
+
+    def check_task(task_id, sql):
+        return SQLCheckOperator(
+            task_id=task_id,
+            conn_id=CONNECTION_ID,
+            sql=sql,
+            retries=0,
+            execution_timeout=timedelta(minutes=5),
+        )
+
+    check_raw = check_task("check_raw_month", "controles/raw_mois_charge.sql")
+    initialize_tables = sql_task("initialize_tables", "00_tables.sql")
+
+    with TaskGroup("staging") as staging:
+        sql_task("yellow_trips", "staging/stg_tlc__yellow_trips.sql")
+        sql_task("taxi_zones", "staging/stg_tlc__taxi_zones.sql")
+        sql_task("tlc_codes", "staging/codes_tlc.sql")
+
+    with TaskGroup("intermediate") as intermediate:
+        flagged = sql_task("flagged", "intermediate/int_trips__flagged.sql")
+        check_rejections = check_task("check_rejection_rate", "controles/rejection_rate.sql")
+        enriched = sql_task("enriched", "intermediate/int_trips__enriched.sql")
+        check_keys = check_task("check_trip_keys", "controles/unique_trip_keys.sql")
+        flagged >> check_rejections >> enriched >> check_keys
+
+    with TaskGroup("marts") as marts:
+        with TaskGroup("dimensions") as dimensions:
+            for name in ("date", "zone", "vendor", "payment_type", "rate_code"):
+                sql_task(f"dim_{name}", f"marts/dim_{name}.sql")
+        facts = sql_task("fct_trips", "marts/fct_trips.sql")
+        demand = sql_task("hourly_demand", "marts/mart_zone_hourly_demand.sql")
+        revenue = sql_task("daily_revenue", "marts/mart_daily_revenue.sql")
+        quality = sql_task("data_quality", "marts/mart_data_quality.sql")
+        dimensions >> facts >> [demand, revenue, quality]
+
+    copy_into_raw >> check_raw >> initialize_tables >> staging >> intermediate >> marts

@@ -138,3 +138,54 @@ ORDER BY _source_file;
 SELECT COUNT(*) AS total_trips
 FROM NYC_TAXI.RAW.YELLOW_TRIPDATA;
 ```
+
+
+## Transformations et contrôles
+
+Le DAG prolonge le chargement RAW par une tâche par fichier SQL, sans modifier
+les SQL de transformation fournis. Les groupes STAGING, INTERMEDIATE et MARTS
+rendent les couches visibles dans le graphe. Les trois tâches de chargement
+conservent leurs identifiants historiques.
+
+Ordre d'exécution :
+
+1. Chargement RAW, puis contrôle fourni de présence du mois.
+2. `00_tables.sql`, avant les transformations, crée les tables alimentées par mois.
+3. STAGING : vues des trajets et des zones, tables des codes.
+4. INTERMEDIATE : FLAGGED, contrôle du taux de rejet, ENRICHED, contrôle des clés.
+5. MARTS : cinq dimensions, FCT_TRIPS, puis les trois tables d'analyse.
+
+Les tâches SQL utilisent `split_statements=True`. Les transformations utilisent
+`autocommit=False` : les paires DELETE/INSERT sont exécutées dans une transaction
+par tâche ; le DDL Snowflake conserve ses propres règles de commit. Il n'existe
+pas de transaction unique couvrant le DAG entier. Une tâche échouée peut être
+rejouée et les tables d'analyse sont recalculées sur les mois présents.
+
+Le mois vient de la date logique ; les paramètres fournis sont 100 miles,
+180 minutes et un calendrier du 1er janvier au 1er avril 2025 exclu.
+`max_rejection_rate_pct=10` est un seuil de surveillance initial du projet,
+supérieur aux 6,44 % mesurés en janvier, et non une règle TLC. Le contrôle exige
+également un lot non vide. Le contrôle des clés exige un lot enrichi non vide,
+aucune clé NULL et autant de clés distinctes que de lignes.
+
+Les contrôles sont des SQLCheckOperator avec `retries=0`. Ils renvoient uniquement
+des booléens et bloquent leurs descendants si une valeur est fausse. Toutes les
+tâches utilisent la règle all_success. La table qualité est recalculée après les
+contrôles ; en cas d'échec, les anomalies du mois restent inspectables dans FLAGGED.
+
+### Exécuter les nouvelles tâches
+
+Rafraîchir le DAG dans Airflow après sa prise en compte par le processeur de DAGs.
+Les trois exécutions RAW déjà réussies ne rejouent pas spontanément les nouvelles
+tâches. Ouvrir d'abord le run de date logique 2025-01-01 (identifiant affiché au
+2025-02-01), puis utiliser Clear pour rejouer cette exécution et ses tâches.
+Vérifier dans la confirmation le périmètre des tâches et l'utilisation de la
+version actuelle du DAG si l'interface propose un choix de version.
+Ne pas utiliser Trigger pour créer une exécution datée d'aujourd'hui.
+
+Après succès, procéder de même pour février puis mars. La validation manuelle de
+janvier ne remplace pas ces exécutions réelles. Les tests locaux ne contactent pas
+Snowflake : ils vérifient l'import, le calendrier, les modèles SQL, les dépendances
+et l'échec de SQLCheckOperator sur des réponses fausses simulées.
+
+Référence : [opérateurs SQL Airflow](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html).

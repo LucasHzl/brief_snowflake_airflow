@@ -22,8 +22,9 @@ couvrent les taxis jaunes publiés par la TLC, pas uniquement une flotte privée
 | MARTS | Organiser faits, dimensions et agrégats pour l'analyse |
 | Airflow | Planifier les périodes et ordonner les tâches exécutées dans Snowflake |
 
-Le DAG actuel automatise le chargement RAW. Les transformations des autres couches
-sont présentes sous forme de fichiers SQL fournis dans le kit du projet.
+Le DAG automatise le chargement RAW et enchaîne les transformations des autres
+couches avec trois contrôles bloquants. Les fichiers SQL fournis sont conservés
+sans modification. Les résultats validés sont précisés ci-dessous.
 
 ## Prérequis
 
