@@ -161,3 +161,9 @@ Les fichiers SQL utilisent des expressions Jinja rendues par Airflow.
 ## Auteur
 
 [LucasHzl](https://github.com/LucasHzl).
+
+## Validation manuelle des transformations
+
+Les [résultats de janvier](docs/validation_transformations_janvier.md) présentent
+les rejets, le dédoublonnage, les volumes MARTS et le premier classement de demande.
+Ces vérifications sont distinctes de la validation du DAG de chargement RAW.
