@@ -85,3 +85,31 @@ bénéfice net. Les trajets observés ne mesurent pas les demandes non satisfait
 Ces résultats concernent les taxis jaunes de la source TLC, pas uniquement la
 flotte Hudson Cab Partners. Ils ne constituent pas encore la réponse finale sur
 janvier à mars, notamment sa ventilation par mode de paiement.
+
+
+## Revenus quotidiens et qualité
+
+Les deux autres marts ont été exécutés manuellement sur janvier.
+
+![Montants par paiement en janvier](captures/revenus_janvier_paiements.png)
+
+| Paiement | Trajets | Montant total (USD) | Montant moyen (USD) |
+|---|---:|---:|---:|
+| Credit card | 2 422 676 | 67 648 716,71 | 27,92 |
+| Flex Fare trip | 413 150 | 9 566 523,82 | 23,16 |
+| Cash | 367 760 | 8 669 057,24 | 23,57 |
+| Dispute | 35 585 | 1 845 157,92 | 51,85 |
+| No charge | 12 166 | 293 174,52 | 24,10 |
+
+La somme des catégories retrouve les 3 251 337 trajets de FCT_TRIPS. Les montants
+positifs associés à Dispute et No charge ne permettent pas d'assimiler cette
+somme à des recettes effectivement encaissées. Les règles fournies ne rejettent
+pas ces incohérences entre catégorie de paiement et montant.
+
+![Qualité de janvier par motif](captures/qualite_janvier.png)
+
+MART_DATA_QUALITY contient six lignes pour janvier : 3 251 337 valides (93,558 %)
+et les cinq motifs de rejet déjà comptés, sur 3 475 226 lignes sources. Les parts
+respectives des rejets sont 3,744 %, 2,599 %, 0,059 %, 0,040 % et 0,001 % dans
+l'ordre du tableau des motifs. Les pourcentages sont arrondis à trois décimales.
+La catégorie valid est mesurée avant dédoublonnage, à partir de FLAGGED.
