@@ -53,3 +53,20 @@ Le relevé de 1,106332 crédit n'inclut pas une éventuelle consommation de ce s
 
 Références : [historique du warehouse](https://docs.snowflake.com/en/sql-reference/account-usage/warehouse_metering_history),
 [historique de l'accélération](https://docs.snowflake.com/en/sql-reference/account-usage/query_acceleration_history).
+
+
+## Contrôle complémentaire de l'accélération
+
+Le 9 octobre 2026 à 09:44:58.373 UTC, la requête sur
+QUERY_ACCELERATION_HISTORY retourne zéro intervalle, avec une somme et des bornes
+à NULL, pour NYC_TAXI_WH et les intervalles débutant entre le 6 octobre 2026 à
+00:00 UTC inclus et le 9 octobre 2026 à 09:42:02.951 UTC exclu.
+
+![Aucun intervalle d'accélération publié](captures/credits_acceleration.png)
+
+SUM renvoie NULL lorsqu'aucune ligne n'est présente. Ce résultat signifie qu'aucune
+consommation d'accélération n'est publiée pour ce périmètre au moment du contrôle,
+malgré l'activation du service. Le délai de publication pouvant atteindre trois
+heures, il ne prouve pas une absence définitive de consommation récente.
+Le montant à présenter demeure 1,106332 crédit brut de warehouse dans le relevé,
+avec aucune consommation additionnelle d'accélération publiée lors du contrôle.
