@@ -180,3 +180,6 @@ distinctes et aucune clé manquante.
 La [réponse à la direction](docs/REPONSE.md) présente les requêtes, le top 10
 sur les trois mois, la ventilation par paiement et les limites des montants
 enregistrés, notamment une anomalie observée dans la catégorie No charge.
+
+La [vérification des droits](docs/validation_droits.md) conserve les attributions
+de TRANSFORMER et les preuves de lecture autorisée et refusée.
