@@ -43,6 +43,52 @@ preuve de blocage en situation d'échec volontaire d'un contrôle.
    réussies, et attendre la fin de cette seule exécution.
 3. Relancer la même requête et comparer chaque volume à celui d'avant le rejeu.
 
-Les comptages sont calculés sur les données, pas lus dans un cache de métadonnées.
+Les requêtes utilisent COUNT(*) sur chaque table ou vue.
 Ils incluent les vues STAGING. Les deux comparaisons de volumes et les preuves
 visuelles permettent de distinguer une exécution réussie d'un rejeu vérifié.
+
+
+## Résultat du rejeu de février
+
+Les deux relevés avant et après rejeu présentent les mêmes volumes pour chacun
+des 18 objets contrôlés. Aucun accroissement du nombre de lignes n'est observé.
+
+![Volumes avant rejeu](captures/rejeu_fevrier_avant.png)
+
+![Volumes après rejeu](captures/rejeu_fevrier_apres.png)
+
+| Objet | Avant | Après |
+|---|---:|---:|
+| INTERMEDIATE.INT_TRIPS__ENRICHED | 10 382 378 | 10 382 378 |
+| INTERMEDIATE.INT_TRIPS__FLAGGED | 11 198 026 | 11 198 026 |
+| MARTS.DIM_DATE | 90 | 90 |
+| MARTS.DIM_PAYMENT_TYPE | 7 | 7 |
+| MARTS.DIM_RATE_CODE | 7 | 7 |
+| MARTS.DIM_VENDOR | 4 | 4 |
+| MARTS.DIM_ZONE | 265 | 265 |
+| MARTS.FCT_TRIPS | 10 382 378 | 10 382 378 |
+| MARTS.MART_DAILY_REVENUE | 450 | 450 |
+| MARTS.MART_DATA_QUALITY | 18 | 18 |
+| MARTS.MART_ZONE_HOURLY_DEMAND | 11 524 | 11 524 |
+| RAW.TAXI_ZONE_LOOKUP | 265 | 265 |
+| RAW.YELLOW_TRIPDATA | 11 198 026 | 11 198 026 |
+| STAGING.PAYMENT_TYPE_CODES | 7 | 7 |
+| STAGING.RATE_CODE_CODES | 7 | 7 |
+| STAGING.STG_TLC__TAXI_ZONES | 265 | 265 |
+| STAGING.STG_TLC__YELLOW_TRIPS | 11 198 026 | 11 198 026 |
+| STAGING.VENDOR_CODES | 4 | 4 |
+
+Les volumes attendus du brief sont aussi confirmés pour FLAGGED, FCT_TRIPS,
+MART_ZONE_HOURLY_DEMAND et MART_DATA_QUALITY. Cette comparaison valide la stabilité
+des volumes sur ce rejeu ; elle n'est pas une comparaison de chaque valeur de
+chaque ligne ni une preuve du blocage des contrôles en situation d'échec.
+
+## Fichiers locaux et fichiers Airflow
+
+Le script ingestion/load_month.py conserve les téléchargements dans data/input.
+Le DAG utilise TemporaryDirectory dans le conteneur pour télécharger et transférer
+le fichier sur le stage, puis supprime cette copie temporaire. Le chargement
+COPY INTO lit ensuite le fichier sur le stage Snowflake. L'absence de mars dans
+le dossier local data/input est donc compatible avec son chargement réussi.
+Un rejeu Airflow télécharge de nouveau le fichier, même si COPY INTO peut ensuite
+l'ignorer comme déjà chargé. La copie locale n'est pas requise pour le rendu.
