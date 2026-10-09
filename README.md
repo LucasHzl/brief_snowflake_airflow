@@ -168,3 +168,9 @@ Les fichiers SQL utilisent des expressions Jinja rendues par Airflow.
 Les [résultats de janvier](docs/validation_transformations_janvier.md) présentent
 les rejets, le dédoublonnage, les volumes MARTS et le premier classement de demande.
 Ces vérifications sont distinctes de la validation du DAG de chargement RAW.
+
+## Validation du pipeline complet
+
+Les [résultats du 9 octobre](docs/validation_pipeline.md) confirment les trois
+exécutions complètes et 10 382 378 trajets dans FCT_TRIPS, avec autant de clés
+distinctes et aucune clé manquante.

@@ -189,3 +189,7 @@ Snowflake : ils vérifient l'import, le calendrier, les modèles SQL, les dépen
 et l'échec de SQLCheckOperator sur des réponses fausses simulées.
 
 Référence : [opérateurs SQL Airflow](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html).
+
+Les [résultats réels du pipeline complet](../docs/validation_pipeline.md)
+consignent les volumes des trois mois validés le 9 octobre 2026. Dans cette
+interface, Clear a pris en compte la nouvelle version sans choix manuel.
