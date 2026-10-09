@@ -117,10 +117,46 @@ les lignes sources.
 À 17 h, la moyenne pondérée des quatre autres catégories est d’environ 26,45 $
 (calcul à partir des moyennes arrondies). Cette comparaison mesure l’influence
 des trajets No charge ; elle ne définit pas une nouvelle règle d’exclusion.
-L’export agrégé ne permet pas de déterminer si quelques valeurs extrêmes ou
-l’ensemble des 91 trajets expliquent l’anomalie. La
-[requête de diagnostic](../snowflake/inspect_unusual_amounts.sql) examine ce groupe
-au niveau des trajets ; aucun résultat de ce diagnostic n’est supposé ici.
+### Diagnostic des montants No charge à 17 h
+
+La [requête de diagnostic](../snowflake/inspect_unusual_amounts.sql) a été exécutée
+sur les 91 trajets du groupe. Le minimum vaut 7,00 $, la médiane 18,65 $, le maximum
+132 555,41 $ et la moyenne 1 477,06 $.
+
+![Statistiques des 91 trajets](captures/diagnostic_no_charge_statistiques.png)
+
+L’[export des vingt montants les plus élevés](resultats/diagnostic_no_charge_top20.csv)
+identifie le trajet suivant dans FCT_TRIPS :
+
+| Champ | Valeur |
+|---|---|
+| Clé du trajet | 2ef0a12d92629dfc97d93396d25d704d |
+| Départ | 2025-02-21 17:28:43 |
+| Arrivée | 2025-02-21 17:53:04 |
+| Durée calculée | 24 min 21 s |
+| Distance | 2,2 miles |
+| Fournisseur | 1 |
+| fare_amount | 132 531,36 $ |
+| surcharges_amount | 24,05 $ |
+| Pourboires et péages | 0,00 $ |
+| total_amount | 132 555,41 $ |
+| Fichier d’origine indiqué | yellow_tripdata_2025-02.parquet |
+
+Le deuxième montant du groupe est de 118,91 $. Le maximum est donc isolé parmi
+ces 91 trajets et explique l’essentiel de l’écart entre moyenne et médiane.
+En retirant uniquement ce trajet à titre de diagnostic, la moyenne des 90 autres
+serait d’environ 20,63 $ (estimation à partir de la moyenne arrondie).
+
+La somme du tarif et des surtaxes retrouve exactement le total affiché. L’anomalie
+ne provient donc pas d’une simple addition incorrecte de ces composantes dans le
+résultat : elle est déjà visible dans fare_amount de la table de faits. Les données
+exportées ne permettent pas d’établir la cause de ce montant ni d’affirmer qu’une
+comparaison directe avec le Parquet source a été effectuée.
+
+Ce trajet respecte les bornes de durée et distance, et les contrôles des montants
+fournis ne testent que certaines valeurs non positives. Il peut donc être classé
+valide tout en restant suspect pour l’analyse financière. Les résultats, les
+règles SQL fournies et les lignes sources sont conservés sans correction arbitraire.
 
 ## Limites
 
