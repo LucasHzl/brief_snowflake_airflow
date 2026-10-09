@@ -58,7 +58,7 @@ awk '!/-----/ {printf "%s", $0} END {print ""}' ~/.ssh/snowflake/rsa_key.pub
 Produire l'instruction d'enregistrement depuis le fichier de clé publique :
 
 ```bash
-python - <<'PYCODE'
+python3 - <<'PYCODE'
 from pathlib import Path
 public_key = "".join(
     line.strip() for line in Path.home().joinpath(".ssh/snowflake/rsa_key.pub").read_text().splitlines()

@@ -58,7 +58,7 @@ python ingestion/load_month.py --account "$SNOWFLAKE_ACCOUNT" --month 2025-01
 ```
 
 4. Suivre la [configuration Airflow](airflow/README.md) pour créer localement
-   `airflow/.env` à partir du fichier d'exemple. Le compte Snowflake et la clé privée
+   `airflow/.env` avec le générateur de connexion local. Le compte Snowflake et la clé privée
    sont propres à l'installation ; ils ne sont pas publiés dans le dépôt.
 5. Démarrer le projet déjà initialisé :
 
@@ -92,7 +92,7 @@ manuel, les options des scripts, les vérifications et les limites du rejeu.
 
 ## Résultats vérifiés
 
-Chargements et comptages validés les 7 et 8 octobre 2026 :
+Chargements validés les 7 et 8 octobre, audit final réalisé le 9 octobre 2026 :
 
 | Données RAW | Lignes |
 |---|---:|
@@ -102,9 +102,12 @@ Chargements et comptages validés les 7 et 8 octobre 2026 :
 | **Total trajets** | **11 198 026** |
 | Référentiel des zones | 265 identifiants distincts |
 
-Les trois exécutions Airflow ont réussi. Janvier et février, déjà présents avant
-leur exécution dans Airflow, ont conservé leurs volumes. Ces résultats valident
-l'ingestion RAW ; ils ne constituent pas une validation des transformations.
+Les trois exécutions complètes Airflow ont réussi, contrôles et transformations
+inclus. FCT_TRIPS contient **10 382 378 trajets**, autant de clés distinctes et
+aucune clé manquante. Le rejeu de février conserve les volumes des 18 objets.
+La comparaison indépendante depuis RAW concorde avec les 18 lignes de
+MART_DATA_QUALITY, sans écart. Les résultats et leur périmètre figurent dans
+[l'audit final](docs/VALIDATION.md).
 
 ```sql
 SELECT _source_file, COUNT(*) AS trip_count
@@ -128,7 +131,8 @@ astro dev pytest
 ```
 
 Les tests couvrent le traitement des réponses COPY, la découverte des DAGs,
-les trois périodes mensuelles et le rendu des noms de fichiers. Ils complètent
+les trois périodes mensuelles, le rendu SQL, les dépendances des contrôles et
+la création sécurisée du fichier de connexion local. Ils complètent
 les validations réelles dans Snowflake et Airflow.
 
 ## Organisation du dépôt
@@ -167,7 +171,7 @@ Les fichiers SQL utilisent des expressions Jinja rendues par Airflow.
 
 Les [résultats de janvier](docs/validation_transformations_janvier.md) présentent
 les rejets, le dédoublonnage, les volumes MARTS et le premier classement de demande.
-Ces vérifications sont distinctes de la validation du DAG de chargement RAW.
+Ces résultats détaillent la classification de janvier avant la validation complète des trois mois.
 
 ## Validation du pipeline complet
 
@@ -186,3 +190,5 @@ de TRANSFORMER et les preuves de lecture autorisée et refusée.
 
 Le [relevé de consommation](docs/consommation.md) détaille les crédits publiés,
 leur périmètre et les paramètres observés du warehouse.
+
+Le [déroulé de démonstration](docs/DEMONSTRATION.md) décrit les manipulations et les choix d’architecture à présenter.

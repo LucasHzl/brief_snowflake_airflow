@@ -125,7 +125,7 @@ Le journal porte attempt=2 après un rejeu manuel d'une tâche déjà exécutée
 ce numéro ne prouve pas une relance automatique. Les contrôles conservent retries=0.
 Les avertissements de démarrage ne sont pas la cause de l'exception SQLCheckOperator.
 
-Le seuil du code a été rétabli à 10 après collecte de la preuve. Cette restauration
-ne relance pas automatiquement l'exécution échouée : Clear doit inclure les tâches
-échouées et leurs descendants bloqués, ou l'ensemble des tâches de janvier.
-Le succès après restauration doit être vérifié dans Airflow séparément.
+Le seuil a été rétabli à 10 et janvier a ensuite terminé en succès le
+9 octobre à 08:48:40 UTC. La lecture des métadonnées Airflow confirme les trois
+runs en succès ; l'[export des exécutions](resultats/airflow_runs_2026-10-09.csv)
+conserve leurs dates logiques et heures de début et de fin.

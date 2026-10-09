@@ -5,6 +5,18 @@ Projet local généré avec Astro CLI, basé sur l'image Astro Runtime
 
 ## Configuration
 
+Depuis la racine du dépôt, créer la connexion locale sans afficher la clé :
+
+```bash
+read -r 'SNOWFLAKE_ACCOUNT?Identifiant de compte Snowflake : '
+python ingestion/configure_airflow.py --account "$SNOWFLAKE_ACCOUNT"
+```
+
+La clé est lue dans `~/.ssh/snowflake/rsa_key.p8` ; `--private-key` permet un autre
+chemin. Le fichier est créé avec des permissions 600. Si `.env` existe déjà,
+la commande le conserve et s'arrête : une installation déjà configurée n'a pas
+besoin de cette étape.
+
 Docker doit être démarré. Le fichier local `.env` reprend le format de
 [.env.example](.env.example) avec le compte Snowflake réel et le contenu de la
 clé privée du compte AIRFLOW_SVC. Il définit la connexion `snowflake_nyc_taxi`.
