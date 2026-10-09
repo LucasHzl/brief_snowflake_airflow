@@ -92,3 +92,40 @@ COPY INTO lit ensuite le fichier sur le stage Snowflake. L'absence de mars dans
 le dossier local data/input est donc compatible avec son chargement réussi.
 Un rejeu Airflow télécharge de nouveau le fichier, même si COPY INTO peut ensuite
 l'ignorer comme déjà chargé. La copie locale n'est pas requise pour le rendu.
+
+
+## Échec volontaire du contrôle de rejet
+
+Le 9 octobre 2026, max_rejection_rate_pct a été abaissé temporairement de 10 à 1.
+L'exécution de janvier a été rejouée sans modification des règles de classification
+ni des données sources pour ce test.
+
+Le journal de intermediate.check_rejection_rate montre la condition rendue
+`... <= 1` et le filtre `source_file_month = '2025-01-01'::date`.
+Extraits du journal transmis, horodatages UTC :
+
+```text
+2026-10-09T08:31:02.380085Z Snowflake query id: 01c79c5f-0002-2b3f-0002-d70600020702
+2026-10-09T08:31:02.520376Z Record: (True, False)
+2026-10-09T08:31:02.521016Z AirflowException: Test failed.
+```
+
+La première valeur valide la présence du lot. La deuxième indique que son taux
+de rejet, environ 6,44 %, dépasse le seuil de 1 %. L'échec provient donc du
+contrôle métier, après exécution réussie de la requête Snowflake.
+
+![Contrôle en échec et MARTS bloqués](captures/controle_rejet_echec.png)
+
+Le groupe INTERMEDIATE affiche une tâche réussie, une échouée et deux en échec
+en amont. Le groupe MARTS est également en upstream_failed. Le pipeline empêche
+ainsi la propagation vers les transformations suivantes. Les anciens résultats
+MARTS restent présents ; le contrôle ne les efface pas.
+
+Le journal porte attempt=2 après un rejeu manuel d'une tâche déjà exécutée ;
+ce numéro ne prouve pas une relance automatique. Les contrôles conservent retries=0.
+Les avertissements de démarrage ne sont pas la cause de l'exception SQLCheckOperator.
+
+Le seuil du code a été rétabli à 10 après collecte de la preuve. Cette restauration
+ne relance pas automatiquement l'exécution échouée : Clear doit inclure les tâches
+échouées et leurs descendants bloqués, ou l'ensemble des tâches de janvier.
+Le succès après restauration doit être vérifié dans Airflow séparément.
