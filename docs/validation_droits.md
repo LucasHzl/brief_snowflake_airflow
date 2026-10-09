@@ -6,7 +6,7 @@ droits, puis tente une lecture de l'historique de consommation hors du périmèt
 
 ## Droits observés
 
-L'[export SHOW GRANTS](resultats/droits_transformer.csv) comporte 36 droits
+L'[export SHOW GRANTS](resultats/droits_transformer_2026-10-09_1528.csv) comporte 36 droits
 attribués à TRANSFORMER. Tous les objets de cet export appartiennent à NYC_TAXI
 ou au warehouse NYC_TAXI_WH.
 
@@ -22,6 +22,11 @@ OWNERSHIP résulte de la création des objets par TRANSFORMER. Ce droit est plus
 large qu'une simple lecture : il permet leur gestion, nécessaire aux opérations
 CREATE OR REPLACE du pipeline. Le rôle est destiné aux transformations, pas aux
 seuls consommateurs des analyses.
+
+La capture montre une partie des attributions ; le CSV associé conserve les
+36 lignes complètes, avec les noms d'objets non tronqués.
+
+![Droits attribués à TRANSFORMER](captures/snowflake_droits_transformer.png)
 
 ## Accès autorisé et refusé
 

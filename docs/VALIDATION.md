@@ -82,10 +82,19 @@ fichier sont documentées dans [chargement_raw.md](chargement_raw.md).
 
 ## Inventaire des preuves visuelles
 
-Le dépôt contient le graphe complet de janvier, l'échec bloquant, le rejeu avant/après,
-les volumes finaux, l'accès refusé et les résultats métier. Les relevés des trois
-runs, des attributions, des chargements et des crédits sont conservés sous forme
-d'exports. Pour le format exact des livrables du brief, les captures de ces quatre
-vues sont à joindre : liste des trois runs réussis, historique COPY, attributions
-TRANSFORMER et consommation du warehouse. L'export CSV ne constitue pas une capture
-Snowsight ou Airflow.
+Les six catégories de captures demandées par le brief sont présentes :
+
+| Attendu | Capture |
+|---|---|
+| Trois exécutions réussies | [Vue Airflow](captures/airflow_trois_runs_success.png) |
+| Graphe du DAG | [Pipeline complet](captures/airflow_janvier_pipeline_complet.png) |
+| Contrôle en échec | [Contrôle bloquant](captures/controle_rejet_echec.png) |
+| Historique de chargement Snowflake | [Trois fichiers chargés](captures/snowflake_historique_chargements.png) |
+| Droits du rôle des outils | [Attributions TRANSFORMER](captures/snowflake_droits_transformer.png) |
+| Suivi des crédits | [Consommation du warehouse](captures/snowflake_consommation_credits.png) |
+
+La capture des droits est complétée par l'[export intégral des 36 attributions](resultats/droits_transformer_2026-10-09_1528.csv).
+Le relevé de crédits complémentaire porte le total documenté à 1,176806 crédit brut ;
+les deux relevés sont distingués dans [consommation.md](consommation.md).
+Le dépôt conserve aussi le rejeu avant/après, les volumes finaux, l'accès refusé
+et les résultats métier.

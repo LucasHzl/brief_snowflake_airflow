@@ -2,6 +2,13 @@
 
 ## Exécutions et volumes
 
+La vue des exécutions confirme les trois succès et les groupes de transformations
+réussis. Les identifiants de février, mars et avril désignent respectivement
+les périodes de données de janvier, février et mars.
+
+![Trois exécutions complètes réussies](captures/airflow_trois_runs_success.png)
+
+
 Les trois exécutions historiques ont été relancées avec Clear et signalées comme
 réussies après intégration des transformations et contrôles. La capture du run de
 janvier montre 21 instances de tâche, les groupes STAGING, INTERMEDIATE et MARTS
@@ -129,3 +136,12 @@ Le seuil a été rétabli à 10 et janvier a ensuite terminé en succès le
 9 octobre à 08:48:40 UTC. La lecture des métadonnées Airflow confirme les trois
 runs en succès ; l'[export des exécutions](resultats/airflow_runs_2026-10-09.csv)
 conserve leurs dates logiques et heures de début et de fin.
+
+## Historique de chargement Snowflake
+
+La capture COPY_HISTORY confirme les trois fichiers Loaded, sans erreur, avec
+3 475 226, 3 577 543 et 4 145 257 lignes lues et chargées. Les heures sont affichées
+en UTC ; elles correspondent aux instants de l'export conservé, dont le décalage
+horaire est indiqué explicitement.
+
+![Historique des trois chargements](captures/snowflake_historique_chargements.png)

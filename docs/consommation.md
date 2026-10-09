@@ -68,5 +68,28 @@ SUM renvoie NULL lorsqu'aucune ligne n'est présente. Ce résultat signifie qu'a
 consommation d'accélération n'est publiée pour ce périmètre au moment du contrôle,
 malgré l'activation du service. Le délai de publication pouvant atteindre trois
 heures, il ne prouve pas une absence définitive de consommation récente.
-Le montant à présenter demeure 1,106332 crédit brut de warehouse dans le relevé,
+Le relevé initial correspond à 1,106332 crédit brut de warehouse,
 avec aucune consommation additionnelle d'accélération publiée lors du contrôle.
+
+## Relevé complémentaire du 9 octobre
+
+La nouvelle capture de consommation présente les valeurs suivantes. Elle conserve
+le même warehouse et la même date de début de période ; l'activité supplémentaire
+et la publication différée des métriques peuvent faire évoluer les crédits.
+
+![Consommation du warehouse](captures/snowflake_consommation_credits.png)
+
+| Jour UTC | Calcul | Services cloud | Total brut |
+|---|---:|---:|---:|
+| 7 octobre | 0,218250 | 0,001929 | 0,220179 |
+| 8 octobre | 0,494625 | 0,003439 | 0,498064 |
+| 9 octobre | 0,445875 | 0,012688 | 0,458563 |
+| **Total publié** | **1,158750** | **0,018056** | **1,176806** |
+
+Le total le plus récent documenté est donc **1,176806 crédit brut de warehouse**.
+Les valeurs de cette table sont transcrites depuis la capture, et non depuis
+l'export CSV du relevé initial. La colonne de l'heure exacte de mesure est tronquée
+sur l'image ; elle n'est pas reconstituée. La dernière borne horaire publiée visible
+est le 9 octobre à 14:00 UTC ; ce n'est pas nécessairement une heure complète au
+moment de la mesure. Les limites de périmètre et de délai décrites ci-dessus restent
+applicables. Le contrôle de l'accélération correspond uniquement au relevé initial.
