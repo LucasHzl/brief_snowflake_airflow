@@ -53,7 +53,7 @@ def download_month(month, directory):
     try:
         with requests.get(
             url, stream=True, timeout=(10, 60),
-            headers={"User-Agent": "NYCTaxiTrainingPipeline/1.0"},
+            headers={"User-Agent": "NYCTaxiPipeline/1.0"},
         ) as response:
             response.raise_for_status()
             with temporary.open("wb") as output:

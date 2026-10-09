@@ -42,7 +42,7 @@ def download_zones(directory):
     LOGGER.info("Downloading %s", URL)
     try:
         with requests.get(URL, stream=True, timeout=(10, 60),
-                          headers={"User-Agent": "NYCTaxiTrainingPipeline/1.0"}) as response:
+                          headers={"User-Agent": "NYCTaxiPipeline/1.0"}) as response:
             response.raise_for_status()
             with temporary.open("wb") as output:
                 for chunk in response.iter_content(chunk_size=65536):
