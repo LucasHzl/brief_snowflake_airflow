@@ -174,3 +174,9 @@ Ces vérifications sont distinctes de la validation du DAG de chargement RAW.
 Les [résultats du 9 octobre](docs/validation_pipeline.md) confirment les trois
 exécutions complètes et 10 382 378 trajets dans FCT_TRIPS, avec autant de clés
 distinctes et aucune clé manquante.
+
+## Réponse métier
+
+La [réponse à la direction](docs/REPONSE.md) présente les requêtes, le top 10
+sur les trois mois, la ventilation par paiement et les limites des montants
+enregistrés, notamment une anomalie observée dans la catégorie No charge.

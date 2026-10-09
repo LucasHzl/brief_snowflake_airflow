@@ -1,0 +1,51 @@
+PICKUP_ZONE_KEY,PICKUP_ZONE_NAME,PICKUP_HOUR,DAY_TYPE,PAYMENT_TYPE_KEY,PAYMENT_TYPE,NB_TRIPS,AVG_AMOUNT_PER_TRIP_USD
+161,Midtown Center,18,Semaine,1,Credit card,32496,25.54
+161,Midtown Center,18,Semaine,2,Cash,2969,20.65
+161,Midtown Center,18,Semaine,0,Flex Fare trip,2222,23.17
+161,Midtown Center,18,Semaine,4,Dispute,364,23.68
+161,Midtown Center,18,Semaine,3,No charge,119,19.35
+161,Midtown Center,17,Semaine,1,Credit card,31563,27.06
+161,Midtown Center,17,Semaine,2,Cash,3077,21.64
+161,Midtown Center,17,Semaine,0,Flex Fare trip,1489,24.68
+161,Midtown Center,17,Semaine,4,Dispute,382,21.9
+161,Midtown Center,17,Semaine,3,No charge,91,1477.06
+161,Midtown Center,20,Semaine,1,Credit card,24724,23.8
+161,Midtown Center,20,Semaine,0,Flex Fare trip,7133,20.77
+161,Midtown Center,20,Semaine,2,Cash,2009,18.62
+161,Midtown Center,20,Semaine,4,Dispute,272,18.76
+161,Midtown Center,20,Semaine,3,No charge,69,18.88
+161,Midtown Center,19,Semaine,1,Credit card,27417,24.7
+161,Midtown Center,19,Semaine,0,Flex Fare trip,2670,22.42
+161,Midtown Center,19,Semaine,2,Cash,2260,20.05
+161,Midtown Center,19,Semaine,4,Dispute,343,20.16
+161,Midtown Center,19,Semaine,3,No charge,83,20
+161,Midtown Center,21,Semaine,1,Credit card,21687,23.97
+161,Midtown Center,21,Semaine,0,Flex Fare trip,7976,21.38
+161,Midtown Center,21,Semaine,2,Cash,1702,19.04
+161,Midtown Center,21,Semaine,4,Dispute,208,19.1
+161,Midtown Center,21,Semaine,3,No charge,63,20.43
+230,Times Sq/Theatre District,21,Semaine,1,Credit card,20836,24.69
+230,Times Sq/Theatre District,21,Semaine,0,Flex Fare trip,5400,22.76
+230,Times Sq/Theatre District,21,Semaine,2,Cash,2752,18.9
+230,Times Sq/Theatre District,21,Semaine,4,Dispute,356,19.64
+230,Times Sq/Theatre District,21,Semaine,3,No charge,142,17.1
+236,Upper East Side North,15,Semaine,1,Credit card,23754,20.6
+236,Upper East Side North,15,Semaine,2,Cash,3244,17.25
+236,Upper East Side North,15,Semaine,0,Flex Fare trip,1884,22.66
+236,Upper East Side North,15,Semaine,4,Dispute,187,17.53
+236,Upper East Side North,15,Semaine,3,No charge,77,18.94
+161,Midtown Center,16,Semaine,1,Credit card,24255,27.35
+161,Midtown Center,16,Semaine,2,Cash,3106,22.02
+161,Midtown Center,16,Semaine,0,Flex Fare trip,776,25.24
+161,Midtown Center,16,Semaine,4,Dispute,338,21.86
+161,Midtown Center,16,Semaine,3,No charge,120,24.24
+237,Upper East Side South,18,Semaine,1,Credit card,23549,22.08
+237,Upper East Side South,18,Semaine,2,Cash,2572,18.63
+237,Upper East Side South,18,Semaine,0,Flex Fare trip,1598,22.57
+237,Upper East Side South,18,Semaine,4,Dispute,280,18.72
+237,Upper East Side South,18,Semaine,3,No charge,66,16.69
+237,Upper East Side South,14,Semaine,1,Credit card,22868,20.58
+237,Upper East Side South,14,Semaine,2,Cash,3649,16.98
+237,Upper East Side South,14,Semaine,0,Flex Fare trip,1136,22.16
+237,Upper East Side South,14,Semaine,4,Dispute,242,16.62
+237,Upper East Side South,14,Semaine,3,No charge,90,15.98
