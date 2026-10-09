@@ -183,3 +183,6 @@ enregistrés, notamment une anomalie observée dans la catégorie No charge.
 
 La [vérification des droits](docs/validation_droits.md) conserve les attributions
 de TRANSFORMER et les preuves de lecture autorisée et refusée.
+
+Le [relevé de consommation](docs/consommation.md) détaille les crédits publiés,
+leur périmètre et les paramètres observés du warehouse.
