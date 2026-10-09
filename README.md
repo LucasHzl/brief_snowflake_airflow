@@ -190,5 +190,3 @@ de TRANSFORMER et les preuves de lecture autorisée et refusée.
 
 Le [relevé de consommation](docs/consommation.md) détaille les crédits publiés,
 leur périmètre et les paramètres observés du warehouse.
-
-Le [déroulé de démonstration](docs/DEMONSTRATION.md) décrit les manipulations et les choix d’architecture à présenter.
